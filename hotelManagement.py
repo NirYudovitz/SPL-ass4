@@ -15,6 +15,7 @@ def main(args):
         # with open(args[1], 'r') as configFile:
         createDB()
         insertConfigToDB(args[1])
+        cronhoteldb.close()
 
 
 def createDB():
@@ -23,22 +24,22 @@ def createDB():
     with cronhoteldb:
         cursor = cronhoteldb.cursor()
 
-        cursor.execute("CREATE TABLE TaskTimes \
-                        (TaskId INTEGER PRIMARY KEY NOT NULL,\
-                        DoEvery INTEGER NOT NULL,\
-                        NumTimes INTEGER NOT NULL)")
+        cursor.execute("""CREATE TABLE TaskTimes
+                        (TaskId INTEGER PRIMARY KEY NOT NULL,
+                        DoEvery INTEGER NOT NULL,
+                        NumTimes INTEGER NOT NULL)""")
 
-        cursor.execute("CREATE TABLE Tasks \
-                        (TaskId INTEGER NOT NULL REFERENCES TaskTimes(TaskId),\
-                        TaksName TEXT NOT NULL, Parameter INTEGER)")
+        cursor.execute("""CREATE TABLE Tasks
+                        (TaskId INTEGER NOT NULL REFERENCES TaskTimes(TaskId),
+                        TasksName TEXT NOT NULL, Parameter INTEGER)""")
 
-        cursor.execute("CREATE TABLE Rooms \
-                    (RoomNumber INTEGER PRIMARY KEY NOT NULL)")
+        cursor.execute("""CREATE TABLE Rooms
+                    (RoomNumber INTEGER PRIMARY KEY NOT NULL)""")
 
-        cursor.execute("CREATE TABLE Residents \
-                    (RoomNumber INTEGER NOT NULL REFERENCES Rooms(RoomNumber),\
-                    FirstName TEXT NOT NULL,\
-                    LastName TEXT NOT NULL )")
+        cursor.execute("""CREATE TABLE Residents
+                    (RoomNumber INTEGER NOT NULL REFERENCES Rooms(RoomNumber),
+                    FirstName TEXT NOT NULL,
+                    LastName TEXT NOT NULL )""")
 
 
 def insertConfigToDB(config):
@@ -52,17 +53,32 @@ def insertConfigToDB(config):
             else:
                 addNewTaskToDB(splitedLine, taskId)
                 taskId += 1
+
+    cursor = cronhoteldb.cursor()
+    cursor.execute("""SELECT Tasks.TaskId, Tasks.TasksName, TaskTimes.DoEvery, TaskTimes.NumTimes, Tasks.Parameter
+    FROM TaskTimes JOIN Tasks
+    WHERE NumTimes > 0 AND
+    Tasks.TaskId = TaskTimes.TaskId""")
+
+    emptyRooms = ""
+    for row in cursor.fetchall():
+        TaskId = row[0]
+        TasksName = row[1]
+        DoEvery = row[2]
+        NumTimes = row[3]
+        Parameter = row[4]
+        print str(TaskId) + " " + str(TasksName) + " " + str(DoEvery) + " " + str(NumTimes) + " " + str(Parameter)
     cronhoteldb.commit()
 
 
 def addNewRoomToDB(roomLine):
     cursor = cronhoteldb.cursor()
     roomNumber = roomLine[1]
-    cursor.execute("INSERT INTO Rooms VALUES(?)", (roomNumber,))
+    cursor.execute("""INSERT INTO Rooms VALUES(?)""", (roomNumber,))
     if len(roomLine) == 4:
         firstName = roomLine[2]
         lastName = roomLine[3]
-        cursor.execute("INSERT INTO Residents VALUES (?,?,?)", (roomNumber, firstName, lastName,))
+        cursor.execute("""INSERT INTO Residents VALUES (?,?,?)""", (roomNumber, firstName, lastName,))
 
 def addNewTaskToDB(taskLine, taskId):
     cursor = cronhoteldb.cursor()
@@ -74,8 +90,8 @@ def addNewTaskToDB(taskLine, taskId):
     else:
         numberTimes = taskLine[2]
         roomNumber = 0
-    cursor.execute("INSERT INTO TaskTimes VALUES (?,?,?)", (taskId, doEvery, numberTimes,))
-    cursor.execute("INSERT INTO Tasks VALUES (?,?,?)", (taskId, taskName, roomNumber,))
+    cursor.execute("""INSERT INTO TaskTimes VALUES (?,?,?)""", (taskId, doEvery, numberTimes,))
+    cursor.execute("""INSERT INTO Tasks VALUES (?,?,?)""", (taskId, taskName, roomNumber,))
 
 
 if __name__ == '__main__':

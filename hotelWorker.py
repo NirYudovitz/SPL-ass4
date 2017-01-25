@@ -1,7 +1,7 @@
 import time
 import sqlite3
 
-cronhoteldb = [None]
+cronhoteldb = sqlite3.connect('cronhoteldb.db')
 
 
 def dohoteltask(taskname, parameter):
@@ -17,30 +17,28 @@ def performWakeup(roomNumber):
     resident = getResidentName(roomNumber)
     firstName = resident[0]
     lastName = resident[1]
-    print firstName + " " + lastName + " in room " + roomNumber + " received a wakeup call at " + time.time()
-
+    print firstName + " " + lastName + " in room " + str(roomNumber) + " received a wakeup call at " + str(time.time())
+    return time.time()
 
 def eatbreakfast(roomNumber):
     resident = getResidentName(roomNumber)
     firstName = resident[0]
     lastName = resident[1]
-    print firstName + " " + lastName + " in room " + roomNumber + " has been served breakfast at " + time.time()
-
+    print firstName + " " + lastName + " in room " + str(roomNumber) + " has been served breakfast at " + str(time.time())
+    return float(time.time())
 
 def cleanSomeRooms():
-    cronhoteldb = sqlite3.connect('cronhoteldb.db')
     cursor = cronhoteldb.cursor()
-    cursor.execute("SELECT roomNumber FROM rooms WHERE roomNumber NOT IN (SELECT roomNumber FROM Residents)\
-                    ORDER BY roomNumber ASC")
+    cursor.execute("""SELECT roomNumber FROM rooms WHERE roomNumber NOT IN (SELECT roomNumber FROM Residents)
+                    ORDER BY roomNumber ASC""")
     emptyRooms = ""
     for row in cursor.fetchall():
         emptyRooms += str(row[0]) + ", "
     emptyRooms = emptyRooms[:-2]
-    print "Rooms " + emptyRooms + " were cleaned at " + time.time()
-
+    print "Rooms " + emptyRooms + " were cleaned at " + str(time.time())
+    return float(time.time())
 
 def getResidentName(roomNumber):
-    cronhoteldb = sqlite3.connect('cronhoteldb.db')
     cursor = cronhoteldb.cursor()
-    cursor.execute("SELECT FirstName, LastName FROM Residents WHERE RoomsNumber = (?)", (roomNumber,))
+    cursor.execute("""SELECT FirstName, LastName FROM Residents WHERE RoomNumber = (?)""", (roomNumber,))
     return cursor.fetchone()
