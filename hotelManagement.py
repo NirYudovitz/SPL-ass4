@@ -53,6 +53,7 @@ def insertConfigToDB(config):
             else:
                 addNewTaskToDB(splitedLine, taskId)
                 taskId += 1
+    configFile.close()
     cronhoteldb.commit()
 
 
