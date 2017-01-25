@@ -15,7 +15,7 @@ def main():
         cursor = getTaskValues()
         for row in cursor:
             taskId = row[0]
-            tasksName = row[1]
+            taskName = row[1]
             doEvery = row[2]
             numTimes = row[3]
             parameter = row[4]
@@ -23,7 +23,7 @@ def main():
 
             if taskId not in idTimeMap or (idTimeMap[taskId] + doEvery) <= time.time():
                 import hotelWorker
-                idTimeMap[taskId] = hotelWorker.dohoteltask(tasksName, parameter)
+                idTimeMap[taskId] = hotelWorker.dohoteltask(taskName, parameter)
                 tasksRemain -= 1
                 decrement(taskId, numTimes)
 
@@ -38,7 +38,7 @@ def decrement(taskId, numTimes):
 
 def getTaskValues():
     cursor = cronhoteldb.cursor()
-    cursor.execute("""SELECT Tasks.TaskId, Tasks.TasksName, TaskTimes.DoEvery, TaskTimes.NumTimes, Tasks.Parameter
+    cursor.execute("""SELECT Tasks.TaskId, Tasks.TaskName, TaskTimes.DoEvery, TaskTimes.NumTimes, Tasks.Parameter
     FROM TaskTimes JOIN Tasks
     WHERE NumTimes > 0 AND
     Tasks.TaskId = TaskTimes.TaskId""")

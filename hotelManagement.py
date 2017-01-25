@@ -31,7 +31,7 @@ def createDB():
 
         cursor.execute("""CREATE TABLE Tasks
                         (TaskId INTEGER NOT NULL REFERENCES TaskTimes(TaskId),
-                        TasksName TEXT NOT NULL, Parameter INTEGER)""")
+                        TaskName TEXT NOT NULL, Parameter INTEGER)""")
 
         cursor.execute("""CREATE TABLE Rooms
                     (RoomNumber INTEGER PRIMARY KEY NOT NULL)""")
