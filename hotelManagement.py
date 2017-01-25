@@ -33,10 +33,10 @@ def createDB():
                         TaksName TEXT NOT NULL, Parameter INTEGER)")
 
         cursor.execute("CREATE TABLE Rooms \
-                    (RoomsNumber INTEGER PRIMARY KEY NOT NULL)")
+                    (RoomNumber INTEGER PRIMARY KEY NOT NULL)")
 
         cursor.execute("CREATE TABLE Residents \
-                    (RoomsNumber INTEGER NOT NULL REFERENCES Rooms(RoomsNumber),\
+                    (RoomNumber INTEGER NOT NULL REFERENCES Rooms(RoomNumber),\
                     FirstName TEXT NOT NULL,\
                     LastName TEXT NOT NULL )")
 
@@ -45,6 +45,7 @@ def insertConfigToDB(config):
     with open(config, 'r') as configFile:
         taskId = 0
         for line in configFile:
+            line = line[:-1]
             splitedLine = line.split(',')
             if splitedLine[0] == "room":
                 addNewRoomToDB(splitedLine)
