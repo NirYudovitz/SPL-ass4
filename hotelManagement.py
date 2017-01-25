@@ -53,21 +53,6 @@ def insertConfigToDB(config):
             else:
                 addNewTaskToDB(splitedLine, taskId)
                 taskId += 1
-
-    cursor = cronhoteldb.cursor()
-    cursor.execute("""SELECT Tasks.TaskId, Tasks.TasksName, TaskTimes.DoEvery, TaskTimes.NumTimes, Tasks.Parameter
-    FROM TaskTimes JOIN Tasks
-    WHERE NumTimes > 0 AND
-    Tasks.TaskId = TaskTimes.TaskId""")
-
-    emptyRooms = ""
-    for row in cursor.fetchall():
-        TaskId = row[0]
-        TasksName = row[1]
-        DoEvery = row[2]
-        NumTimes = row[3]
-        Parameter = row[4]
-        print str(TaskId) + " " + str(TasksName) + " " + str(DoEvery) + " " + str(NumTimes) + " " + str(Parameter)
     cronhoteldb.commit()
 
 

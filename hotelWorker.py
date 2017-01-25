@@ -1,16 +1,18 @@
 import time
 import sqlite3
 
-cronhoteldb = sqlite3.connect('cronhoteldb.db')
+cronhoteldb = [None]
 
 
 def dohoteltask(taskname, parameter):
+    global cronhoteldb
+    cronhoteldb = sqlite3.connect('cronhoteldb.db')
     if taskname == "wakeup":
-        performWakeup(parameter)
+        return performWakeup(parameter)
     elif taskname == "breakfast":
-        eatbreakfast(parameter)
+        return eatbreakfast(parameter)
     elif taskname == "clean":
-        cleanSomeRooms()
+        return cleanSomeRooms()
 
 
 def performWakeup(roomNumber):

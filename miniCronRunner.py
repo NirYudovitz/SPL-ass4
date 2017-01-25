@@ -1,14 +1,15 @@
 import os
+import sys
+import os.path
 import time
 import sqlite3
 
-import hotelWorker
+cronhoteldb = [None]
+idTimeMap = {}
 
-cronhoteldb = sqlite3.connect('cronhoteldb.db')
-idTimeMap = dict()
 
 def main():
-    global cronhoteldb
+
     tasksRemain = countTasks()
     while os.path.isfile('cronhoteldb.db') and tasksRemain > 0:
         cursor = getTaskValues()
@@ -20,11 +21,15 @@ def main():
             parameter = row[4]
             # print idTimeMap[taskId]
 
-            if idTimeMap.get(taskId) is None or (idTimeMap[taskId] + doEvery) <= float(time.time()):
-                idTimeMap[taskId] = float(hotelWorker.dohoteltask(tasksName, parameter))
+            if taskId not in idTimeMap or (idTimeMap[taskId] + doEvery) <= time.time():
+                import hotelWorker
+                idTimeMap[taskId] = hotelWorker.dohoteltask(tasksName, parameter)
+                tasksRemain -= 1
                 decrement(taskId, numTimes)
-    cronhoteldb.close()
-    exit()
+
+    if os.path.isfile('cronhoteldb.db'):
+        cronhoteldb.close()
+
 
 def decrement(taskId, numTimes):
     cursor = cronhoteldb.cursor()
@@ -43,12 +48,16 @@ def getTaskValues():
 
 
 def countTasks():
-    cursor = cronhoteldb.cursor()
-    cursor.execute("""SELECT NumTimes FROM TaskTimes""")
-    sum = 0
-    for row in cursor.fetchall():
-        sum += int(row[0])
-    return sum
+    if os.path.isfile('cronhoteldb.db'):
+        global cronhoteldb
+        cronhoteldb = sqlite3.connect('cronhoteldb.db')
+        cursor = cronhoteldb.cursor()
+        cursor.execute("""SELECT NumTimes FROM TaskTimes""")
+        sum = 0
+        for row in cursor.fetchall():
+            sum += int(row[0])
+        return sum
+    return 0
 
 if __name__ == '__main__':
     main()
